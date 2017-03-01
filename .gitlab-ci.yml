@@ -27,6 +27,7 @@ ezcp-server-build:
 ezcp-server-deploy:
   stage: deploy
   script:
+    - ls -lR
     - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )'
     - eval $(ssh-agent -s)
     - ssh-add <(echo "$EZCP_IO_SSHKEY")
@@ -39,6 +40,4 @@ ezcp-server-deploy:
   environment:
     name: ezcp.io
     url: https://ezcp.io
-  only:
-    - master
-    - tags
+  when: manual
