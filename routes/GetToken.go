@@ -1,9 +1,9 @@
 package routes
 
 import (
-	"crypto"
-	"encoding/hex"
+	"crypto/sha1"
 	"errors"
+	"fmt"
 	"math/rand"
 	"net/http"
 	"strconv"
@@ -22,11 +22,12 @@ func (h *Handler) GetToken(res http.ResponseWriter, req *http.Request) {
 	random := strconv.Itoa(rand.Int())
 	useragent := req.UserAgent()
 
-	sha1 := crypto.SHA1.New()
+	sha1 := sha1.New()
 	sha1.Write([]byte(now))
 	sha1.Write([]byte(random))
-	bytes := sha1.Sum([]byte(useragent))
-	hash := hex.EncodeToString(bytes)
+	sha1.Write([]byte(useragent))
+	bytes := sha1.Sum(nil)
+	hash := fmt.Sprintf("%x", bytes)
 
 	exists, err := h.db.TokenExists(hash, false)
 	if err != nil {
