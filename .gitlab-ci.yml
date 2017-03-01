@@ -6,7 +6,7 @@ stages:
 
 
 variables:
-  GOSOURCES: "/go/src/ezcp/ezcp-server"
+  GOSOURCES: "/go/src/ezcp.io/ezcp-server"
 
 cache:
   key: "ezcp-server-$CI_PIPELINE_ID"
