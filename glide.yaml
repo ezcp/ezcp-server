@@ -1,0 +1,10 @@
+package: ezcp.io/ezcp-server
+import:
+- package: github.com/gorilla/mux
+  version: ^1.3.0
+- package: github.com/rs/cors
+  version: ^1.0.0
+- package: golang.org/x/crypto
+  subpackages:
+  - acme/autocert
+- package: gopkg.in/mgo.v2
