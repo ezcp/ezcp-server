@@ -27,7 +27,12 @@ ezcp-server-build:
 ezcp-server-deploy:
   stage: deploy
   script:
-    - ls -lR
+    - mkdir -p $GOSOURCES
+    - cp -r . $GOSOURCES
+    - cd $GOSOURCES
+    - curl https://glide.sh/get | sh
+    - glide install
+    - go build -ldflags "-X main.Build=$CI_PIPELINE_ID -X main.Tag=$CI_BUILD_TAG"
     - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )'
     - eval $(ssh-agent -s)
     - ssh-add <(echo "$EZCP_IO_SSHKEY")
