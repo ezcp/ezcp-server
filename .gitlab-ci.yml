@@ -8,11 +8,6 @@ stages:
 variables:
   GOSOURCES: "/go/src/ezcp.io/ezcp-server"
 
-cache:
-  key: "ezcp-server-$CI_PIPELINE_ID"
-  paths:
-    - ezcp-server
-
 ezcp-server-build:
   stage: build
   script:
@@ -22,7 +17,6 @@ ezcp-server-build:
     - curl https://glide.sh/get | sh
     - glide install
     - go build -ldflags "-X main.Build=$CI_PIPELINE_ID -X main.Tag=$CI_BUILD_TAG"
-    - cp ezcp-server $CI_PROJECT_DIR
     
 ezcp-server-deploy:
   stage: deploy
@@ -39,7 +33,7 @@ ezcp-server-deploy:
     - mkdir -p ~/.ssh
     - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
     - ssh chris@ezcp.io 'killall ezcp-server || true && rm -f /home/chris/ezcp/ezcp-server'
-    - scp $CI_PROJECT_DIR/ezcp-server chris@ezcp.io:~/ezcp/
+    - scp ezcp-server chris@ezcp.io:~/ezcp/
     - ssh chris@ezcp.io 'nohup ~/ezcp/ezcp-server -db localhost:27017 > /home/chris/ezcp/ezcp.log 2>&1 &'
 
   environment:
