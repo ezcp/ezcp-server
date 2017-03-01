@@ -18,7 +18,24 @@ import (
 	"github.com/rs/cors"
 )
 
+var (
+	// Tag is set by Gitlab's CI build process
+	Tag string
+	// Build is set by Gitlab's CI build process
+	Build string
+)
+
 func main() {
+	if Build != "" {
+		if Tag == "" {
+			log.Printf("ezcp-server build %s", Build)
+		} else {
+			log.Printf("ezcp-server %s - build %s", Tag, Build)
+		}
+	} else {
+		log.Print("ezcp-server development version")
+	}
+
 	log.SetFlags(log.LUTC | log.LstdFlags)
 
 	var hostPort = flag.String("host", "localhost:8000", "host and port for http server")
@@ -69,7 +86,7 @@ func main() {
 		}()
 	}
 
-	os.Mkdir("storage", 0700) // it doesn't matter if it exists already
+	os.Mkdir(routes.EZCPstorage, 0700) // it doesn't matter if it exists already
 
 	r := mux.NewRouter()
 

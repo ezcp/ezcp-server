@@ -7,6 +7,9 @@ import (
 	db "ezcp.io/ezcp-server/db"
 )
 
+// EZCPstorage is the storage location path for EZCP
+const EZCPstorage = "ezcp-storage/"
+
 // Handler handles HTTP routes
 type Handler struct {
 	db db.DB

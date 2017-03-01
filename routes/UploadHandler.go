@@ -24,7 +24,7 @@ func (h *Handler) UploadHandler(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	file, err := os.Create("storage/" + token)
+	file, err := os.Create(EZCPstorage + token)
 	if err != nil {
 		h.internalError(res, err)
 		return

@@ -22,7 +22,7 @@ func (h *Handler) DownloadHandler(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	file, err := os.Open("storage/" + token)
+	file, err := os.Open(EZCPstorage + token)
 	if err != nil {
 		h.internalError(res, err)
 		return
