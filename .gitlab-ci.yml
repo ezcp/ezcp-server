@@ -1,23 +1,12 @@
 image: golang:1.8
 
 stages:
-  - build
   - deploy
 
 
 variables:
   GOSOURCES: "/go/src/ezcp.io/ezcp-server"
 
-ezcp-server-build:
-  stage: build
-  script:
-    - mkdir -p $GOSOURCES
-    - cp -r . $GOSOURCES
-    - cd $GOSOURCES
-    - curl https://glide.sh/get | sh
-    - glide install
-    - go build -ldflags "-X main.Build=$CI_PIPELINE_ID -X main.Tag=$CI_BUILD_TAG"
-    
 ezcp-server-deploy:
   stage: deploy
   script:
@@ -39,4 +28,5 @@ ezcp-server-deploy:
   environment:
     name: ezcp.io
     url: https://ezcp.io
-  when: manual
+  only:
+    - master
