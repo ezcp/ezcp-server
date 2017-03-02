@@ -18,6 +18,11 @@ import (
 // are removed after some time.
 func (h *Handler) GetToken(res http.ResponseWriter, req *http.Request) {
 
+	if req.Method != http.MethodPost {
+		res.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+
 	now := time.Now().String()
 	random := strconv.Itoa(rand.Int())
 	useragent := req.UserAgent()

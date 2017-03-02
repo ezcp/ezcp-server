@@ -12,6 +12,11 @@ import (
 // UploadHandler is used to receive a post'ed document from the CLI
 // It stores the resulting file
 func (h *Handler) UploadHandler(res http.ResponseWriter, req *http.Request) {
+	if req.Method != http.MethodPost {
+		res.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+
 	token := mux.Vars(req)["token"]
 
 	exists, err := h.db.TokenExists(token, true)

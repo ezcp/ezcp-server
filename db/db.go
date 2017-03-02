@@ -21,8 +21,8 @@ type Token struct {
 	Token      string        `bson:"token"`
 	Length     int64         `bson:"len,omitempty"`
 	Created    time.Time     `bson:"created"`
-	Uploaded   time.Time     `bson:"up,omitempty"`
-	Downloaded time.Time     `bson:"down,omitempty"`
+	Uploaded   *time.Time    `bson:"up,omitempty"`
+	Downloaded *time.Time    `bson:"down,omitempty"`
 
 	// only for permanent tokens
 	Permanent bool   `bson:"permanent"`
@@ -33,6 +33,7 @@ type Token struct {
 type DB interface {
 	CreateToken(token string) error
 	TokenExists(token string, checkNoUpload bool) (bool, error)
+	GetToken(token string) (*Token, error)
 	TokenUploaded(token string, length int64, timestamp time.Time) error
 	TokenDownloaded(token string, timestamp time.Time) error
 	RemoveExpiredTokens() ([]string, error)
@@ -79,6 +80,22 @@ func (db *db) CreateToken(token string) error {
 	return error
 }
 
+// GetToken returns a token or nil if not found
+func (db *db) GetToken(token string) (*Token, error) {
+	session, coll := db.tokens()
+	defer session.Close()
+
+	var tokens []Token
+	err := coll.Find(bson.M{"token": token}).All(&tokens)
+	if err != nil {
+		return nil, err
+	}
+	if len(tokens) == 0 {
+		return nil, errors.New("Token not found")
+	}
+	return &tokens[0], nil
+}
+
 // TokenExists checks if a token exists
 func (db *db) TokenExists(token string, checkNoUpload bool) (bool, error) {
 	session, coll := db.tokens()
@@ -102,6 +119,9 @@ func (db *db) TokenUploaded(token string, length int64, timestamp time.Time) err
 	session, coll := db.tokens()
 	defer session.Close()
 	err := coll.Update(bson.M{"token": token}, bson.M{"$set": bson.M{"length": length, "up": timestamp}})
+	if err != nil {
+		return err
+	}
 	return err
 }
 

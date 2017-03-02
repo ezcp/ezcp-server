@@ -6,19 +6,30 @@ import (
 	"os"
 	"time"
 
+	"log"
+
 	"github.com/gorilla/mux"
 )
 
 // DownloadHandler is used to retrieve the file from the CLI
 func (h *Handler) DownloadHandler(res http.ResponseWriter, req *http.Request) {
+	if req.Method != http.MethodGet {
+		res.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+
 	token := mux.Vars(req)["token"]
 
-	exists, err := h.db.TokenExists(token, false)
+	tok, err := h.db.GetToken(token)
 	if err != nil {
 		h.internalError(res, err)
 	}
-	if !exists {
+	if tok == nil {
 		res.WriteHeader(404)
+		return
+	}
+	if tok.Uploaded == nil {
+		res.WriteHeader(400)
 		return
 	}
 
@@ -28,8 +39,8 @@ func (h *Handler) DownloadHandler(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	res.WriteHeader(200)
 	res.Header().Set("Content-Type", "application/octet-stream")
+	res.WriteHeader(200)
 	_, err = io.Copy(res, file)
 	if err != nil {
 		h.internalError(res, err)
@@ -38,6 +49,11 @@ func (h *Handler) DownloadHandler(res http.ResponseWriter, req *http.Request) {
 
 	err = h.db.TokenDownloaded(token, time.Now())
 	if err != nil {
-		h.internalError(res, err)
+		log.Print("Can't remove token", token, err)
+	}
+
+	err = os.Remove(EZCPstorage + token)
+	if err != nil {
+		log.Print("Can't remove file ", token, err)
 	}
 }
