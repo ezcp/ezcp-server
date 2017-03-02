@@ -21,8 +21,15 @@ import (
 var (
 	// Tag is set by Gitlab's CI build process
 	Tag string
+
 	// Build is set by Gitlab's CI build process
 	Build string
+
+	// BitgoToken is set by Gitlab's CI build process
+	BitgoToken string
+
+	// BitgoWallet is set by Gitlab's CI build process
+	BitgoWallet string
 )
 
 func main() {

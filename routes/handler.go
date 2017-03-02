@@ -12,12 +12,14 @@ const EZCPstorage = "ezcp-storage/"
 
 // Handler handles HTTP routes
 type Handler struct {
-	db db.DB
+	db          db.DB
+	bitgoToken  string
+	bitgoWallet string
 }
 
 // NewHandler returns a routes handler
-func NewHandler(db db.DB) *Handler {
-	return &Handler{db}
+func NewHandler(db db.DB, token string, wallet string) *Handler {
+	return &Handler{db, token, wallet}
 }
 
 func (h *Handler) internalError(res http.ResponseWriter, err error) {
