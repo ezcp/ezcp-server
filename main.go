@@ -102,7 +102,7 @@ func main() {
 		panic(err)
 	}
 	defer db.Close()
-	handler := routes.NewHandler(db)
+	handler := routes.NewHandler(db, BitgoToken, BitgoWallet)
 
 	r.HandleFunc("/token", handler.GetToken)
 	r.HandleFunc("/upload/{token}", handler.UploadHandler)
