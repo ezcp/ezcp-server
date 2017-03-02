@@ -24,8 +24,12 @@ func (h *Handler) UploadHandler(res http.ResponseWriter, req *http.Request) {
 		h.internalError(res, err)
 		return
 	}
-
-	if tok != nil && !tok.Permanent {
+	if tok == nil {
+		res.WriteHeader(404)
+		res.Write([]byte("Token not found"))
+		return
+	}
+	if tok.Uploaded != nil && !tok.Permanent {
 		res.WriteHeader(404)
 		res.Write([]byte("Token already uploaded"))
 		return
