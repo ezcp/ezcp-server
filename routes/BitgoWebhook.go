@@ -35,7 +35,7 @@ func (h *Handler) BitgoWebhook(res http.ResponseWriter, req *http.Request) {
 	if isSimulation, ok := transaction["simulation"].(bool); ok && isSimulation {
 		log.Print("Simulated transaction", transaction)
 	}
-	if hash, ok := transaction["hash"].(string); !ok {
+	if hash, ok := transaction["hash"].(string); ok {
 		paid, err := h.getAmount(hash)
 		if err != nil || paid == 0 {
 			log.Print("Can't get amount for transaction ", hash)
