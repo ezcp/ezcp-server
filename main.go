@@ -100,6 +100,8 @@ func main() {
 	r.HandleFunc("/token", handler.GetToken)
 	r.HandleFunc("/upload/{token}", handler.UploadHandler)
 	r.HandleFunc("/download/{token}", handler.DownloadHandler)
+	r.HandleFunc("/bitgo", handler.BitgoWebhook)
+
 	withCors := cors.Default().Handler(r) // TODO LATER finer handling of allowed origins
 	http.Handle("/", withCors)
 

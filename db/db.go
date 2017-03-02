@@ -13,20 +13,27 @@ import (
 const (
 	dbName           = "ezcp"
 	dbCollectionName = "tokens"
+	txCollectionName = "tx"
 )
 
 // Token is a stored Token
 type Token struct {
-	ID         bson.ObjectId `bson:"_id,omitempty"`
-	Token      string        `bson:"token"`
-	Length     int64         `bson:"len,omitempty"`
-	Created    time.Time     `bson:"created"`
-	Uploaded   *time.Time    `bson:"up,omitempty"`
-	Downloaded *time.Time    `bson:"down,omitempty"`
+	Token      string     `bson:"token"`
+	Length     int64      `bson:"len,omitempty"`
+	Created    time.Time  `bson:"created"`
+	Uploaded   *time.Time `bson:"up,omitempty"`
+	Downloaded *time.Time `bson:"down,omitempty"`
 
 	// only for permanent tokens
 	Permanent bool   `bson:"permanent"`
 	Creator   string `bson:"creator,omitempty"`
+}
+
+type BitgoTransaction map[string]interface{}
+
+type Transaction struct {
+	Created time.Time        `bson:"created"`
+	Tx      BitgoTransaction `bson:"tx"`
 }
 
 // DB is the interface to the DB module
@@ -38,6 +45,8 @@ type DB interface {
 	TokenDownloaded(token *Token, timestamp time.Time) error
 	RemoveExpiredTokens() ([]string, error)
 	Close()
+
+	StoreTransaction(tx *BitgoTransaction) error
 }
 
 type db struct {
@@ -137,9 +146,9 @@ func (db *db) TokenDownloaded(token *Token, timestamp time.Time) error {
 				"down": time.Now(),
 			},
 		}
-		err = coll.Update(bson.M{"token": token.ID}, update)
+		err = coll.Update(bson.M{"token": token.Token}, update)
 	} else {
-		err = coll.Remove(bson.M{"token": token.ID})
+		err = coll.Remove(bson.M{"token": token.Token})
 	}
 	return err
 }
@@ -165,4 +174,25 @@ func (db *db) tokens() (*mgo.Session, *mgo.Collection) {
 	session.SetSafe(&mgo.Safe{})
 	collection := session.DB(dbName).C(dbCollectionName)
 	return session, collection
+}
+
+// tokens is used to quickly get hold of a session and collection
+func (db *db) tx() (*mgo.Session, *mgo.Collection) {
+	if db.session == nil {
+		panic(errors.New("DB is closed already"))
+	}
+	session := db.session.New()
+	session.SetSafe(&mgo.Safe{})
+	collection := session.DB(dbName).C(txCollectionName)
+	return session, collection
+}
+
+func (db *db) StoreTransaction(tx *BitgoTransaction) error {
+	session, coll := db.tx()
+	defer session.Close()
+	error := coll.Insert(&Transaction{
+		Created: time.Now(),
+		Tx:      *tx,
+	})
+	return error
 }
