@@ -9,9 +9,9 @@ import (
 	"github.com/gorilla/mux"
 )
 
-// UploadHandler is used to receive a post'ed document from the CLI
+// Upload is used to receive a post'ed document from the CLI
 // It stores the resulting file
-func (h *Handler) UploadHandler(res http.ResponseWriter, req *http.Request) {
+func (h *Handler) Upload(res http.ResponseWriter, req *http.Request) {
 	if req.Method != http.MethodPost {
 		res.WriteHeader(http.StatusMethodNotAllowed)
 		return

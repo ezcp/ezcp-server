@@ -25,9 +25,6 @@ var (
 	// Build is set by Gitlab's CI build process
 	Build string
 
-	// BitgoToken is set by Gitlab's CI build process
-	BitgoToken string
-
 	// BitgoWallet is set by Gitlab's CI build process
 	BitgoWallet string
 )
@@ -102,12 +99,12 @@ func main() {
 		panic(err)
 	}
 	defer db.Close()
-	handler := routes.NewHandler(db, BitgoToken, BitgoWallet)
+	handler := routes.NewHandler(db, BitgoWallet)
 
 	r.HandleFunc("/token", handler.GetToken)
-	r.HandleFunc("/upload/{token}", handler.UploadHandler)
-	r.HandleFunc("/download/{token}", handler.DownloadHandler)
-	r.HandleFunc("/bitgo", handler.BitgoWebhook)
+	r.HandleFunc("/upload/{token}", handler.Upload)
+	r.HandleFunc("/download/{token}", handler.Download)
+	r.HandleFunc("/validate/{tx}", handler.ValidateTx)
 
 	withCors := cors.Default().Handler(r) // TODO LATER finer handling of allowed origins
 	http.Handle("/", withCors)

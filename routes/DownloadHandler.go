@@ -11,8 +11,8 @@ import (
 	"github.com/gorilla/mux"
 )
 
-// DownloadHandler is used to retrieve the file from the CLI
-func (h *Handler) DownloadHandler(res http.ResponseWriter, req *http.Request) {
+// Download is used to retrieve the file from the CLI
+func (h *Handler) Download(res http.ResponseWriter, req *http.Request) {
 	if req.Method != http.MethodGet {
 		res.WriteHeader(http.StatusMethodNotAllowed)
 		return

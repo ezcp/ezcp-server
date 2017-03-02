@@ -29,32 +29,13 @@ type Token struct {
 	Creator   string `bson:"creator,omitempty"`
 }
 
-type BitgoTransaction map[string]interface{}
-
-type Transaction struct {
-	Created time.Time        `bson:"created"`
-	Tx      BitgoTransaction `bson:"tx"`
-}
-
-// DB is the interface to the DB module
-type DB interface {
-	CreateToken(token string) error
-	TokenExists(token string, checkNoUpload bool) (bool, error)
-	GetToken(token string) (*Token, error)
-	TokenUploaded(token string, length int64, timestamp time.Time) error
-	TokenDownloaded(token *Token, timestamp time.Time) error
-	RemoveExpiredTokens() ([]string, error)
-	Close()
-
-	StoreTransaction(tx *BitgoTransaction) error
-}
-
-type db struct {
+// DB models our db
+type DB struct {
 	session *mgo.Session
 }
 
 // NewDB returns a new DB
-func NewDB(dbHost string) (DB, error) {
+func NewDB(dbHost string) (*DB, error) {
 	session, err := mgo.Dial(dbHost)
 	if err != nil {
 		return nil, err
@@ -74,11 +55,11 @@ func NewDB(dbHost string) (DB, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &db{session}, nil
+	return &DB{session}, nil
 }
 
 // CreateToken stores a new token
-func (db *db) CreateToken(token string) error {
+func (db *DB) CreateToken(token string) error {
 	session, coll := db.tokens()
 	defer session.Close()
 	error := coll.Insert(&Token{
@@ -90,7 +71,7 @@ func (db *db) CreateToken(token string) error {
 }
 
 // GetToken returns a token or nil if not found
-func (db *db) GetToken(token string) (*Token, error) {
+func (db *DB) GetToken(token string) (*Token, error) {
 	session, coll := db.tokens()
 	defer session.Close()
 
@@ -106,7 +87,7 @@ func (db *db) GetToken(token string) (*Token, error) {
 }
 
 // TokenExists checks if a token exists
-func (db *db) TokenExists(token string, checkNoUpload bool) (bool, error) {
+func (db *DB) TokenExists(token string, checkNoUpload bool) (bool, error) {
 	session, coll := db.tokens()
 	defer session.Close()
 	var q interface{}
@@ -124,7 +105,7 @@ func (db *db) TokenExists(token string, checkNoUpload bool) (bool, error) {
 }
 
 // TokenUploaded is called once a file has been uploaded
-func (db *db) TokenUploaded(token string, length int64, timestamp time.Time) error {
+func (db *DB) TokenUploaded(token string, length int64, timestamp time.Time) error {
 	session, coll := db.tokens()
 	defer session.Close()
 	err := coll.Update(bson.M{"token": token}, bson.M{"$set": bson.M{"length": length, "up": timestamp}})
@@ -135,7 +116,7 @@ func (db *db) TokenUploaded(token string, length int64, timestamp time.Time) err
 }
 
 // TokenDownloaded is called once a file has been downloaded
-func (db *db) TokenDownloaded(token *Token, timestamp time.Time) error {
+func (db *DB) TokenDownloaded(token *Token, timestamp time.Time) error {
 	session, coll := db.tokens()
 	defer session.Close()
 
@@ -154,19 +135,19 @@ func (db *db) TokenDownloaded(token *Token, timestamp time.Time) error {
 }
 
 // RemoveExpiredTokens removes old unused tokens and returns them
-func (db *db) RemoveExpiredTokens() ([]string, error) {
+func (db *DB) RemoveExpiredTokens() ([]string, error) {
 	return nil, nil
 }
 
 // Close will definitely close the database
-func (db *db) Close() {
+func (db *DB) Close() {
 	db.session.Close()
 	db.session = nil
 	log.Print("DB closed")
 }
 
 // tokens is used to quickly get hold of a session and collection
-func (db *db) tokens() (*mgo.Session, *mgo.Collection) {
+func (db *DB) tokens() (*mgo.Session, *mgo.Collection) {
 	if db.session == nil {
 		panic(errors.New("DB is closed already"))
 	}
@@ -177,7 +158,7 @@ func (db *db) tokens() (*mgo.Session, *mgo.Collection) {
 }
 
 // tokens is used to quickly get hold of a session and collection
-func (db *db) tx() (*mgo.Session, *mgo.Collection) {
+func (db *DB) tx() (*mgo.Session, *mgo.Collection) {
 	if db.session == nil {
 		panic(errors.New("DB is closed already"))
 	}
@@ -187,12 +168,26 @@ func (db *db) tx() (*mgo.Session, *mgo.Collection) {
 	return session, collection
 }
 
-func (db *db) StoreTransaction(tx *BitgoTransaction) error {
+// StoreTransaction stores a transaction to mongodb
+func (db *DB) StoreTransaction(tx *Transaction) error {
 	session, coll := db.tx()
 	defer session.Close()
-	error := coll.Insert(&Transaction{
-		Created: time.Now(),
-		Tx:      *tx,
-	})
+	error := coll.Insert(tx)
 	return error
+}
+
+// LoadTransaction loads a transaction from mongodb
+func (db *DB) LoadTransaction(txid string) (*Transaction, error) {
+	session, coll := db.tx()
+	defer session.Close()
+	var transactions []Transaction
+	err := coll.Find(bson.M{"id": txid}).All(&transactions)
+	if err != nil {
+		return nil, err
+	}
+	if len(transactions) == 0 {
+		return nil, nil
+	}
+	return &transactions[0], nil
+
 }
