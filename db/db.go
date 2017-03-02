@@ -35,7 +35,7 @@ type DB interface {
 	TokenExists(token string, checkNoUpload bool) (bool, error)
 	GetToken(token string) (*Token, error)
 	TokenUploaded(token string, length int64, timestamp time.Time) error
-	TokenDownloaded(token string, timestamp time.Time) error
+	TokenDownloaded(token *Token, timestamp time.Time) error
 	RemoveExpiredTokens() ([]string, error)
 	Close()
 }
@@ -91,7 +91,7 @@ func (db *db) GetToken(token string) (*Token, error) {
 		return nil, err
 	}
 	if len(tokens) == 0 {
-		return nil, errors.New("Token not found")
+		return nil, nil
 	}
 	return &tokens[0], nil
 }
@@ -126,10 +126,21 @@ func (db *db) TokenUploaded(token string, length int64, timestamp time.Time) err
 }
 
 // TokenDownloaded is called once a file has been downloaded
-func (db *db) TokenDownloaded(token string, timestamp time.Time) error {
+func (db *db) TokenDownloaded(token *Token, timestamp time.Time) error {
 	session, coll := db.tokens()
 	defer session.Close()
-	err := coll.Remove(bson.M{"token": token})
+
+	var err error
+	if token.Permanent {
+		update := bson.M{
+			"$set": bson.M{
+				"down": time.Now(),
+			},
+		}
+		err = coll.Update(bson.M{"token": token.ID}, update)
+	} else {
+		err = coll.Remove(bson.M{"token": token.ID})
+	}
 	return err
 }
 

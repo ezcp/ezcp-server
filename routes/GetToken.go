@@ -24,11 +24,13 @@ func (h *Handler) GetToken(res http.ResponseWriter, req *http.Request) {
 	}
 
 	now := time.Now().String()
+	now2 := strconv.Itoa(time.Now().Nanosecond())
 	random := strconv.Itoa(rand.Int())
 	useragent := req.UserAgent()
 
 	sha1 := sha1.New()
 	sha1.Write([]byte(now))
+	sha1.Write([]byte(now2))
 	sha1.Write([]byte(random))
 	sha1.Write([]byte(useragent))
 	bytes := sha1.Sum(nil)

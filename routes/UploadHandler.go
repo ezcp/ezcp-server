@@ -19,13 +19,15 @@ func (h *Handler) UploadHandler(res http.ResponseWriter, req *http.Request) {
 
 	token := mux.Vars(req)["token"]
 
-	exists, err := h.db.TokenExists(token, true)
+	tok, err := h.db.GetToken(token)
 	if err != nil {
 		h.internalError(res, err)
 		return
 	}
-	if !exists {
+
+	if tok != nil && !tok.Permanent {
 		res.WriteHeader(404)
+		res.Write([]byte("Token already uploaded"))
 		return
 	}
 

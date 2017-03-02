@@ -23,13 +23,16 @@ func (h *Handler) DownloadHandler(res http.ResponseWriter, req *http.Request) {
 	tok, err := h.db.GetToken(token)
 	if err != nil {
 		h.internalError(res, err)
+		return
 	}
 	if tok == nil {
 		res.WriteHeader(404)
+		res.Write([]byte("Token not found"))
 		return
 	}
 	if tok.Uploaded == nil {
 		res.WriteHeader(400)
+		res.Write([]byte("Token not uploaded"))
 		return
 	}
 
@@ -43,11 +46,11 @@ func (h *Handler) DownloadHandler(res http.ResponseWriter, req *http.Request) {
 	res.WriteHeader(200)
 	_, err = io.Copy(res, file)
 	if err != nil {
-		h.internalError(res, err)
+		log.Print("Error during copy from disk")
 		return
 	}
 
-	err = h.db.TokenDownloaded(token, time.Now())
+	err = h.db.TokenDownloaded(tok, time.Now())
 	if err != nil {
 		log.Print("Can't remove token", token, err)
 	}
