@@ -15,7 +15,7 @@ ezcp-server-deploy:
     - cd $GOSOURCES
     - curl https://glide.sh/get | sh
     - glide install
-    - go build -ldflags "-X main.Build=$CI_PIPELINE_ID -X main.Tag=$CI_BUILD_TAG -X main.BitgoToken=$BITGO_TOKEN -X main.BitgoWallet=$BITGO_WALLET"
+    - go build -ldflags "-X main.Build=$CI_PIPELINE_ID -X main.Tag=$CI_BUILD_TAG -X main.BitgoWallet=$BITGO_WALLET"
     - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )'
     - eval $(ssh-agent -s)
     - ssh-add <(echo "$EZCP_IO_SSHKEY")
