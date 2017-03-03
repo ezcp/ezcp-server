@@ -33,30 +33,32 @@ type Transaction struct {
 	Outputs []Account `json:"outputs"`
 	Entries []Account `json:"entries"`
 	Pending bool      `json:"pending"`
+
+	Token *string `bson:"token,omitempty"` // only present in mongodb
 }
 
 // IsValid checks if a transaction is valid
-func (t *Transaction) IsValid(ourWallet string) (bool, error) {
+func (t *Transaction) Check(ourWallet string) error {
 	acc := t.GetAccountEntry(ourWallet)
 	if acc == nil {
-		return false, errors.New("EZCP wasn't the recepient of the transaction")
+		return errors.New("EZCP wasn't the recepient of the transaction")
 	}
 	txdate := t.GetDate()
 	validationRequired := txdate.AddDate(0, 0, 1) // one day to validate transaction
 	expires := txdate.AddDate(1, 0, 0)
 	now := time.Now()
 	if t.Pending && validationRequired.After(now) {
-		return false, errors.New("Transaction has been pending validation for more than 24h") // no validation in one day
+		return errors.New("Transaction has been pending validation for more than 24h") // no validation in one day
 	}
 	// could add tests about validation count too...
 	if expires.Before(now) {
-		return false, errors.New("Subscription has expired")
+		return errors.New("Subscription has expired")
 	}
 	amount := acc.ValueBTC()
 	if amount > priceBtc {
-		return true, nil
+		return nil
 	}
-	return false, errors.New("Transaction amount wasn't enough")
+	return errors.New("Transaction amount wasn't enough")
 }
 
 // GetDate returns a time.Time object from json date

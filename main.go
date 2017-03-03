@@ -104,7 +104,7 @@ func main() {
 	r.HandleFunc("/token", handler.GetToken)
 	r.HandleFunc("/upload/{token}", handler.Upload)
 	r.HandleFunc("/download/{token}", handler.Download)
-	r.HandleFunc("/validate/{tx}", handler.ValidateTx)
+	r.HandleFunc("/token/{tx}", handler.GetTokenTx)
 
 	withCors := cors.Default().Handler(r) // TODO LATER finer handling of allowed origins
 	http.Handle("/", withCors)

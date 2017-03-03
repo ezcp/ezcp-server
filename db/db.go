@@ -70,6 +70,19 @@ func (db *DB) CreateToken(token string) error {
 	return error
 }
 
+// CreateDurableToken stores a new token
+func (db *DB) CreateDurableToken(token string, creator string) error {
+	session, coll := db.tokens()
+	defer session.Close()
+	error := coll.Insert(&Token{
+		Token:     token,
+		Created:   time.Now(),
+		Permanent: true,
+		Creator:   creator,
+	})
+	return error
+}
+
 // GetToken returns a token or nil if not found
 func (db *DB) GetToken(token string) (*Token, error) {
 	session, coll := db.tokens()
