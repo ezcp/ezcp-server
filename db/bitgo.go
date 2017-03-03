@@ -55,7 +55,7 @@ func (t *Transaction) Check(ourWallet string) error {
 		return errors.New("Subscription has expired")
 	}
 	amount := acc.ValueBTC()
-	if amount > priceBtc {
+	if amount >= priceBtc {
 		return nil
 	}
 	return errors.New("Transaction amount wasn't enough")

@@ -23,6 +23,13 @@ func (h *Handler) GetToken(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	// origin := req.Header.Get("Origin")
+	// if origin != h.origin {
+	// 	log.Print("Wrong origin header")
+	// 	res.WriteHeader(401)
+	// 	return
+	// }
+
 	hash := h.getToken(req)
 
 	exists, err := h.db.TokenExists(hash, false)

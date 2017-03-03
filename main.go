@@ -27,6 +27,9 @@ var (
 
 	// BitgoWallet is set by Gitlab's CI build process
 	BitgoWallet string
+
+	// AllowedOrigin for GetToken
+	AllowedOrigin string
 )
 
 func main() {
@@ -99,7 +102,7 @@ func main() {
 		panic(err)
 	}
 	defer db.Close()
-	handler := routes.NewHandler(db, BitgoWallet)
+	handler := routes.NewHandler(db, BitgoWallet, AllowedOrigin)
 
 	r.HandleFunc("/token", handler.GetToken)
 	r.HandleFunc("/upload/{token}", handler.Upload)
