@@ -2,10 +2,9 @@ package db
 
 import (
 	"errors"
+	"log"
 	"net/http"
 	"time"
-
-	"log"
 
 	"encoding/json"
 )
@@ -19,6 +18,7 @@ const (
 type Account struct {
 	Account string  `json:"account"`
 	Value   float64 `json:"value"`
+	IsMine  bool    `json:"isMine"`
 }
 
 // ValueBTC returns the account value in BTC
@@ -31,15 +31,14 @@ type Transaction struct {
 	ID      string    `json:"id"`
 	Date    string    `json:"date"`
 	Outputs []Account `json:"outputs"`
-	Entries []Account `json:"entries"`
 	Pending bool      `json:"pending"`
 
 	Token *string `bson:"token,omitempty"` // only present in mongodb
 }
 
-// IsValid checks if a transaction is valid
-func (t *Transaction) Check(ourWallet string) error {
-	acc := t.GetAccountEntry(ourWallet)
+// Check checks if a transaction is valid
+func (t *Transaction) Check() error {
+	acc := t.GetOurAccountEntry()
 	if acc == nil {
 		return errors.New("EZCP wasn't the recepient of the transaction")
 	}
@@ -67,10 +66,12 @@ func (t *Transaction) GetDate() time.Time {
 	return tim
 }
 
-// GetAccountEntry returns the account entry for the specified account, or nil if not found
-func (t *Transaction) GetAccountEntry(account string) *Account {
-	for _, a := range t.Entries {
-		if a.Account == account {
+// GetOurAccountEntry returns the account entry that belongs to us, or nil if not found
+func (t *Transaction) GetOurAccountEntry() *Account {
+	log.Print(t)
+	for _, a := range t.Outputs {
+		log.Print(a)
+		if a.IsMine {
 			return &a
 		}
 	}
@@ -80,20 +81,42 @@ func (t *Transaction) GetAccountEntry(account string) *Account {
 // BitgoTransaction returns a transaction from Bitgo
 func (db *DB) BitgoTransaction(tx string) (*Transaction, error) {
 	client := &http.Client{}
-	req, err := http.NewRequest("GET", "https://www.bitgo.com/api/v1/tx/"+tx, nil)
+	req, err := http.NewRequest("GET", "https://www.bitgo.com/api/v1/wallet/"+db.bitgoWallet+"/tx/"+tx, nil)
 	if err != nil {
 		return nil, err
 	}
+	req.Header.Set("Authorization", "Bearer "+db.bitgoToken)
 	resp, err := client.Do(req)
 	if err != nil {
 		return nil, err
 	}
+	log.Print(resp.StatusCode)
 
 	transaction := &Transaction{}
 	if err := json.NewDecoder(resp.Body).Decode(transaction); err != nil {
 		log.Print("Can't parse transaction")
 		return nil, nil
 	}
-
 	return transaction, nil
+}
+
+// NewAddress returns a new Bitgo address
+func (db *DB) NewAddress() (string, error) {
+	client := &http.Client{}
+	req, err := http.NewRequest("POST", "https://www.bitgo.com/api/v1/wallet/"+db.bitgoWallet+"/address/0", nil)
+	if err != nil {
+		return "", err
+	}
+	req.Header.Set("Authorization", "Bearer "+db.bitgoToken)
+
+	var resp *http.Response
+	resp, err = client.Do(req)
+	if err != nil {
+		return "", err
+	}
+	var result = make(map[string]interface{})
+	if err = json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return "", err
+	}
+	return result["address"].(string), nil
 }

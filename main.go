@@ -28,6 +28,9 @@ var (
 	// BitgoWallet is set by Gitlab's CI build process
 	BitgoWallet string
 
+	// BitgoToken is set by Gitlab's CI build process
+	BitgoToken string
+
 	// AllowedOrigin for GetToken
 	AllowedOrigin string
 )
@@ -97,17 +100,18 @@ func main() {
 
 	r := mux.NewRouter()
 
-	db, err := db.NewDB(*dbHost)
+	db, err := db.NewDB(*dbHost, BitgoWallet, BitgoToken)
 	if err != nil {
 		panic(err)
 	}
 	defer db.Close()
-	handler := routes.NewHandler(db, BitgoWallet, AllowedOrigin)
+	handler := routes.NewHandler(db, AllowedOrigin)
 
 	r.HandleFunc("/token", handler.GetToken)
+	r.HandleFunc("/token/{tx}", handler.GetTokenTx)
 	r.HandleFunc("/upload/{token}", handler.Upload)
 	r.HandleFunc("/download/{token}", handler.Download)
-	r.HandleFunc("/token/{tx}", handler.GetTokenTx)
+	r.HandleFunc("/bitcoin", handler.Bitcoin)
 
 	withCors := cors.Default().Handler(r) // TODO LATER finer handling of allowed origins
 	http.Handle("/", withCors)

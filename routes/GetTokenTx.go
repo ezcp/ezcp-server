@@ -33,7 +33,7 @@ func (h *Handler) GetTokenTx(res http.ResponseWriter, req *http.Request) {
 		}
 
 		// check tx
-		if err := tx.Check(h.bitgoWallet); err != nil {
+		if err := tx.Check(); err != nil {
 			res.WriteHeader(401)
 			res.Write([]byte(err.Error()))
 			return
@@ -59,7 +59,7 @@ func (h *Handler) GetTokenTx(res http.ResponseWriter, req *http.Request) {
 	}
 
 	// check tx, it could have expired
-	if err := tx.Check(h.bitgoWallet); err != nil {
+	if err := tx.Check(); err != nil {
 		res.WriteHeader(401)
 		res.Write([]byte(err.Error()))
 		return
