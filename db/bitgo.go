@@ -85,7 +85,7 @@ func (db *DB) BitgoTransaction(tx string) (*Transaction, error) {
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Set("Authorization", "Bearer "+db.bitgoToken)
+	req.Header.Set("Authorization", "Bearer "+string(db.bitgoToken))
 	resp, err := client.Do(req)
 	if err != nil {
 		return nil, err
@@ -107,7 +107,7 @@ func (db *DB) NewAddress() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	req.Header.Set("Authorization", "Bearer "+db.bitgoToken)
+	req.Header.Set("Authorization", "Bearer "+string(db.bitgoToken))
 
 	var resp *http.Response
 	resp, err = client.Do(req)

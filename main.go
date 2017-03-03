@@ -100,7 +100,7 @@ func main() {
 
 	r := mux.NewRouter()
 
-	db, err := db.NewDB(*dbHost, BitgoWallet, BitgoToken)
+	db, err := db.NewDB(*dbHost, db.BitgoToken(BitgoToken), BitgoWallet)
 	if err != nil {
 		panic(err)
 	}

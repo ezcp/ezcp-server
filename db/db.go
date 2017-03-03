@@ -33,12 +33,15 @@ type Token struct {
 type DB struct {
 	session *mgo.Session
 
-	bitgoToken  string
+	bitgoToken  BitgoToken
 	bitgoWallet string
 }
 
+// BitgoToken exist to avoid confusion
+type BitgoToken string
+
 // NewDB returns a new DB
-func NewDB(dbHost string, token string, wallet string) (*DB, error) {
+func NewDB(dbHost string, token BitgoToken, wallet string) (*DB, error) {
 	session, err := mgo.Dial(dbHost)
 	if err != nil {
 		return nil, err
