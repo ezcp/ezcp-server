@@ -7,6 +7,8 @@ import (
 	"os"
 	"time"
 
+	"ezcp.io/ezcp-server/db"
+
 	"strings"
 
 	"github.com/gorilla/mux"
@@ -48,7 +50,7 @@ func (h *Handler) Download(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	file, err := os.Open(h.getFilePath(token))
+	file, err := os.Open(db.GetFilePath(token))
 	if err != nil {
 		h.internalError(res, err)
 		return
@@ -67,7 +69,7 @@ func (h *Handler) Download(res http.ResponseWriter, req *http.Request) {
 		log.Print("Can't remove token", token, err)
 	}
 
-	err = os.Remove(h.getFilePath(token))
+	err = os.Remove(db.GetFilePath(token))
 	if err != nil {
 		log.Print("Can't remove file ", token, err)
 	}

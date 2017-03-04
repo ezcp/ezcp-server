@@ -50,6 +50,7 @@ func main() {
 
 	log.SetFlags(log.LUTC | log.LstdFlags)
 
+	var purge = flag.Bool("purge", false, "purge old tokens")
 	var cpuprofile = flag.String("cpuprofile", "", "write cpu profile to file")
 	var memprofile = flag.String("memprofile", "", "write memory profile to this file")
 	var dbHost = flag.String("db", "localhost:27017", "host:port,host:port of mongodb servers")
@@ -93,15 +94,34 @@ func main() {
 		}()
 	}
 
-	r := mux.NewRouter()
-
-	db, err := db.NewDB(*dbHost, db.BitgoToken(BitgoToken), BitgoWallet)
+	database, err := db.NewDB(*dbHost, db.BitgoToken(BitgoToken), BitgoWallet)
 	if err != nil {
 		panic(err)
 	}
-	defer db.Close()
-	handler := routes.NewHandler(db)
+	defer database.Close()
 
+	handler := routes.NewHandler(database)
+
+	if *purge {
+		log.Print("Purging old ezcp tokens")
+
+		tokens, err := database.RemoveExpiredTokens()
+		if err != nil {
+			panic(err)
+		}
+
+		for _, eachToken := range tokens {
+			path := db.GetFilePath(eachToken)
+			_, err := os.Stat(path)
+			if err != os.ErrNotExist {
+				os.Remove(path)
+			}
+		}
+		log.Print("Purging... done.")
+		return
+	}
+
+	r := mux.NewRouter()
 	r.HandleFunc("/token/{tx}", handler.GetTokenTx)
 	r.HandleFunc("/upload/{token}", handler.Upload)
 	r.HandleFunc("/download/{token}", handler.Download)
@@ -112,7 +132,7 @@ func main() {
 
 	if *ssl {
 		log.Print("Starting HTTPS server, on 0.0.0.0:443")
-		go startSSL(allowedHosts, db)
+		go startSSL(allowedHosts, database)
 
 		log.Print("Starting HTTP server, on 0.0.0.0:80")
 		log.Fatal(http.ListenAndServe(":80", http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {

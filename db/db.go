@@ -3,6 +3,8 @@ package db
 import (
 	"errors"
 	"log"
+	"os"
+	"path/filepath"
 	"time"
 
 	mgo "gopkg.in/mgo.v2"
@@ -14,6 +16,9 @@ const (
 	tokensCollectionName = "tokens"
 	txCollectionName     = "tx"
 	certsCollectionName  = "certs"
+
+	// EZCPstorage is the storage location path for EZCP
+	EZCPstorage = "ezcp-storage/"
 )
 
 // Token is a stored Token
@@ -169,7 +174,27 @@ func (db *DB) TokenDownloaded(token *Token, timestamp time.Time) error {
 
 // RemoveExpiredTokens removes old unused tokens and returns them
 func (db *DB) RemoveExpiredTokens() ([]string, error) {
-	return nil, nil
+	session, coll := db.tokens()
+	defer session.Close()
+
+	hourAgo := time.Now().Add(-1 * time.Hour)
+
+	var tokens []Token
+	q := bson.M{"created": bson.M{"$lt": hourAgo}, "permanent": false}
+	err := coll.Find(q).All(&tokens)
+	if err != nil {
+		return nil, err
+	}
+	_, err = coll.RemoveAll(q)
+	if err != nil {
+		return nil, err
+	}
+
+	var result []string
+	for _, each := range tokens {
+		result = append(result, each.Token)
+	}
+	return result, nil
 }
 
 // Close will definitely close the database
@@ -234,4 +259,20 @@ func (db *DB) LoadTransaction(txid string) (*Transaction, error) {
 	}
 	return &transactions[0], nil
 
+}
+
+// GetFilePath return the complete path for a token
+func GetFilePath(token string) string {
+	first3 := token[0:3]
+	next2 := token[3:5]
+	path := filepath.Join(EZCPstorage, first3, next2)
+
+	fileinfo, err := os.Stat(path)
+	if err != nil || !fileinfo.IsDir() {
+		err = os.MkdirAll(path, 0700)
+		if err != nil {
+			log.Print(err)
+		}
+	}
+	return filepath.Join(path, token)
 }

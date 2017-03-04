@@ -6,6 +6,8 @@ import (
 	"os"
 	"time"
 
+	"ezcp.io/ezcp-server/db"
+
 	"github.com/gorilla/mux"
 )
 
@@ -35,7 +37,7 @@ func (h *Handler) Upload(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	file, err := os.Create(h.getFilePath(token))
+	file, err := os.Create(db.GetFilePath(token))
 	if err != nil {
 		h.internalError(res, err)
 		return
