@@ -9,6 +9,8 @@ import (
 	"runtime/pprof"
 	"time"
 
+	"strings"
+
 	"ezcp.io/ezcp-server/db"
 	"ezcp.io/ezcp-server/routes"
 	"github.com/gorilla/mux"
@@ -48,17 +50,12 @@ func main() {
 
 	log.SetFlags(log.LUTC | log.LstdFlags)
 
-	var hostPort = flag.String("host", "localhost:8000", "host and port for http server")
 	var cpuprofile = flag.String("cpuprofile", "", "write cpu profile to file")
 	var memprofile = flag.String("memprofile", "", "write memory profile to this file")
 	var dbHost = flag.String("db", "localhost:27017", "host:port,host:port of mongodb servers")
 
 	var ssl = flag.Bool("ssl", false, "Enable SSL support")
 	flag.Parse()
-
-	if hp := os.Getenv("HOST_PORT"); hp != "" {
-		hostPort = &hp
-	}
 
 	if envSSL := os.Getenv("SSL"); envSSL != "" {
 		*ssl = true
@@ -116,28 +113,45 @@ func main() {
 	http.Handle("/", Gzip(r))
 
 	if *ssl {
-		certManager := autocert.Manager{
-			Prompt:     autocert.AcceptTOS,
-			HostPolicy: autocert.HostWhitelist(allowedHosts...),
-			Cache:      db,
-			Email:      "info@ezcp.io",
-			ForceRSA:   false,
-		}
-		srv := &http.Server{
-			Addr: ":https",
-			TLSConfig: &tls.Config{
-				GetCertificate: certManager.GetCertificate,
-			},
-		}
-		log.Print("TLS Server starting at ", *hostPort)
+		log.Print("Starting HTTPS server, on 0.0.0.0:443")
+		go startSSL(allowedHosts, db)
 
-		log.Fatal(srv.ListenAndServeTLS("", ""))
+		log.Print("Starting HTTP server, on 0.0.0.0:80")
+		log.Fatal(http.ListenAndServe(":80", http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+			host := req.Host
+			if last := strings.LastIndex(req.Host, ":"); last != -1 {
+				host = req.Host[:last]
+			}
+			target := "https://" + host + req.URL.Path
+			if len(req.URL.RawQuery) > 0 {
+				target += "?" + req.URL.RawQuery
+			}
+			w.Header().Set("Strict-Transport-Security", `"max-age=31536000; includeSubDomains; preload"`)
+			http.Redirect(w, req, target, http.StatusMovedPermanently)
+		})))
 		return
 	}
-	log.Print("Server starting at ", *hostPort)
 
+	log.Print("Starting development server, on localhost:8000")
 	srv := &http.Server{
-		Addr: *hostPort,
+		Addr: "localhost:8000",
 	}
 	log.Fatal(srv.ListenAndServe())
+}
+
+func startSSL(allowedHosts []string, db *db.DB) {
+	certManager := autocert.Manager{
+		Prompt:     autocert.AcceptTOS,
+		HostPolicy: autocert.HostWhitelist(allowedHosts...),
+		Cache:      db,
+		Email:      "info@ezcp.io",
+		ForceRSA:   false,
+	}
+	srv := &http.Server{
+		Addr: ":https",
+		TLSConfig: &tls.Config{
+			GetCertificate: certManager.GetCertificate,
+		},
+	}
+	log.Fatal(srv.ListenAndServeTLS("", ""))
 }

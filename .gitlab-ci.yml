@@ -16,15 +16,15 @@ ezcp-server-deploy:
     - curl https://glide.sh/get | sh
     - glide install
     - go build -ldflags "-X main.Build=$CI_PIPELINE_ID -X main.Tag=$CI_BUILD_TAG -X main.BitgoWallet=$BITGO_WALLET -X main.BitgoToken=$BITGO_TOKEN"
+    - mkdir -p ~/.ssh
     - ssh-keygen -f "/root/.ssh/known_hosts" -R api0.ezcp.io || true
+    - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
     - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )'
     - eval $(ssh-agent -s)
     - ssh-add <(echo "$EZCP_IO_SSHKEY")
-    - mkdir -p ~/.ssh
-    - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
-    - ssh ezcp@api0.ezcp.io 'killall -u ezcp ezcp-server || true && rm -f ~/ezcp-server'
-    - scp ezcp-server index.html ezcp@api0.ezcp.io:~/
-    - ssh ezcp@api0.ezcp.io 'nohup ~/ezcp-server -db db1.ezcp.io:27017,db2.ezcp.io:27017,db3.ezcp.io:27017 --host=0.0.0.0:443 --ssl> ~/ezcp.log 2>&1 &'
+    - ssh root@api0.ezcp.io 'killall ezcp-server || true && rm -f ~/ezcp-server'
+    - scp ezcp-server index.html root@api0.ezcp.io:~/
+    - ssh root@api0.ezcp.io 'nohup ~/ezcp-server -db db1.ezcp.io:27017,db2.ezcp.io:27017,db3.ezcp.io:27017 --ssl > ~/ezcp.log 2>&1 &'
 
   environment:
     name: ezcp.io
