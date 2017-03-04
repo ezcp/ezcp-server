@@ -1,12 +1,11 @@
 package db
 
 import (
+	"encoding/json"
 	"errors"
 	"log"
 	"net/http"
 	"time"
-
-	"encoding/json"
 )
 
 const (

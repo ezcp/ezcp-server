@@ -5,16 +5,14 @@ import (
 	"flag"
 	"log"
 	"net/http"
+	"os"
 	"runtime/pprof"
 	"time"
 
-	"ezcp.io/ezcp-server/routes"
-	"golang.org/x/crypto/acme/autocert"
-
-	"os"
-
 	"ezcp.io/ezcp-server/db"
+	"ezcp.io/ezcp-server/routes"
 	"github.com/gorilla/mux"
+	"golang.org/x/crypto/acme/autocert"
 )
 
 var (
@@ -29,9 +27,6 @@ var (
 
 	// BitgoToken is set by Gitlab's CI build process
 	BitgoToken string
-
-	// AllowedOrigin for GetToken
-	AllowedOrigin string
 )
 
 func main() {
@@ -104,7 +99,7 @@ func main() {
 		panic(err)
 	}
 	defer db.Close()
-	handler := routes.NewHandler(db, AllowedOrigin)
+	handler := routes.NewHandler(db)
 
 	r.HandleFunc("/token/{tx}", handler.GetTokenTx)
 	r.HandleFunc("/upload/{token}", handler.Upload)

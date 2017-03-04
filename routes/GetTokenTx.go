@@ -4,7 +4,6 @@ import (
 	"net/http"
 
 	"ezcp.io/ezcp-server/db"
-
 	"github.com/gorilla/mux"
 )
 

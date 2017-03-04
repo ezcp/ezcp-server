@@ -2,11 +2,10 @@ package routes
 
 import (
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"time"
-
-	"log"
 
 	"github.com/gorilla/mux"
 )

@@ -1,10 +1,9 @@
 package db
 
 import (
+	"errors"
 	"log"
 	"time"
-
-	"errors"
 
 	mgo "gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
