@@ -30,6 +30,12 @@ var (
 )
 
 func main() {
+	allowedHosts := []string{"ezcp.io", "www.ezcp.io", "api0.ezcp.io",
+		"api1.ezcp.io", "api2.ezcp.io", "api3.ezcp.io", "api4.ezcp.io",
+		"api5.ezcp.io", "api6.ezcp.io", "api7.ezcp.io", "api8.ezcp.io",
+		"api9.ezcp.io", "apia.ezcp.io", "apib.ezcp.io", "apic.ezcp.io",
+		"apid.ezcp.io", "apie.ezcp.io", "apif.ezcp.io"}
+
 	if Build != "" {
 		if Tag == "" {
 			log.Printf("ezcp-server build %s", Build)
@@ -112,7 +118,7 @@ func main() {
 	if *ssl {
 		certManager := autocert.Manager{
 			Prompt:     autocert.AcceptTOS,
-			HostPolicy: autocert.HostWhitelist("ezcp.io"),
+			HostPolicy: autocert.HostWhitelist(allowedHosts...),
 			Cache:      db,
 			Email:      "info@ezcp.io",
 			ForceRSA:   false,
