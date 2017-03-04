@@ -23,6 +23,7 @@ ezcp-server-deploy:
     - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
     - ssh chris@ezcp.io 'killall ezcp-server || true && rm -f /home/chris/ezcp/ezcp-server'
     - scp ezcp-server chris@ezcp.io:~/ezcp/
+    - scp index.html chris@ezcp.io:~/
     - ssh chris@ezcp.io 'nohup ~/ezcp/ezcp-server -db localhost:27017 > /home/chris/ezcp/ezcp.log 2>&1 &'
 
   environment:
