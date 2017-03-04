@@ -7,6 +7,8 @@ import (
 	"os"
 	"time"
 
+	"strings"
+
 	"github.com/gorilla/mux"
 )
 
@@ -19,8 +21,12 @@ func (h *Handler) Download(res http.ResponseWriter, req *http.Request) {
 
 	token := mux.Vars(req)["token"]
 
-	expectedHostName := "api" + string(token[0]) + ".ezcp.io:443"
-	if req.Host != expectedHostName && req.Host != "localhost:8000" {
+	hostName := req.Host
+	if last := strings.LastIndex(req.Host, ":"); last != -1 {
+		hostName = req.Host[:last]
+	}
+	expectedHostName := "api" + string(token[0]) + ".ezcp.io"
+	if hostName != expectedHostName && req.Host != "localhost:8000" {
 		res.Header().Set("Location", "https://"+expectedHostName+"/download/"+token)
 		res.WriteHeader(301)
 		return
