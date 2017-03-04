@@ -21,10 +21,9 @@ ezcp-server-deploy:
     - ssh-add <(echo "$EZCP_IO_SSHKEY")
     - mkdir -p ~/.ssh
     - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
-    - ssh ezcp@api0.ezcp.io 'killall ezcp-server || true && rm -f ~/ezcp-server'
-    - scp ezcp-server ezcp@api0.ezcp.io:~/
-    - scp index.html ezcp@api0.ezcp.io:~/
-    - ssh ezcp@api0.ezcp.io 'nohup ~/ezcp-server -db db1.ezcp.io:27017,db2.ezcp.io:27017,db3.ezcp.io:27017 > ~/ezcp.log 2>&1 &'
+    - ssh ezcp@api0.ezcp.io 'killall -u ezcp ezcp-server || true && rm -f ~/ezcp-server'
+    - scp ezcp-server index.html ezcp@api0.ezcp.io:~/
+    - ssh ezcp@api0.ezcp.io 'nohup ~/ezcp-server -db db1.ezcp.io:27017,db2.ezcp.io:27017,db3.ezcp.io:27017 --host=0.0.0.0:443 --ssl> ~/ezcp.log 2>&1 &'
 
   environment:
     name: ezcp.io
