@@ -19,13 +19,12 @@ func (h *Handler) Download(res http.ResponseWriter, req *http.Request) {
 
 	token := mux.Vars(req)["token"]
 
-	log.Print(req.Host)
-	// expectedHostName := "api" + string(token[0]) + ".ezcp.io:443"
-	// if req.Host != expectedHostName && req.Host != "localhost:8000" {
-	// 	res.Header().Set("Location", "https://"+expectedHostName+"/download/"+token)
-	// 	res.WriteHeader(301)
-	// 	return
-	// }
+	expectedHostName := "api" + string(token[0]) + ".ezcp.io:443"
+	if req.Host != expectedHostName && req.Host != "localhost:8000" {
+		res.Header().Set("Location", "https://"+expectedHostName+"/download/"+token)
+		res.WriteHeader(301)
+		return
+	}
 
 	tok, err := h.db.GetToken(token)
 	if err != nil {
