@@ -118,8 +118,8 @@ func main() {
 		certManager := autocert.Manager{
 			Prompt:     autocert.AcceptTOS,
 			HostPolicy: autocert.HostWhitelist("ezcp.io"),
-			Cache:      autocert.DirCache("certs"), // TODO LATER store in bold db or distributed db ?
-			Email:      "chris@chris-hartwig.com",  // TODO env var
+			Cache:      db,
+			Email:      "info@ezcp.io",
 			ForceRSA:   false,
 		}
 		srv := &http.Server{

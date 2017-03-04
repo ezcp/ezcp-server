@@ -11,9 +11,10 @@ import (
 )
 
 const (
-	dbName           = "ezcp"
-	dbCollectionName = "tokens"
-	txCollectionName = "tx"
+	dbName               = "ezcp"
+	tokensCollectionName = "tokens"
+	txCollectionName     = "tx"
+	certsCollectionName  = "certs"
 )
 
 // Token is a stored Token
@@ -48,15 +49,29 @@ func NewDB(dbHost string, token BitgoToken, wallet string) (*DB, error) {
 	}
 	log.Print("Connected to ", dbHost)
 
-	err = session.DB(dbName).C(dbCollectionName).EnsureIndex(mgo.Index{
+	err = session.DB(dbName).C(tokensCollectionName).EnsureIndex(mgo.Index{
 		Key:    []string{"token"},
 		Unique: true,
 	})
 	if err != nil {
 		return nil, err
 	}
-	err = session.DB(dbName).C(dbCollectionName).EnsureIndex(mgo.Index{
+	err = session.DB(dbName).C(tokensCollectionName).EnsureIndex(mgo.Index{
 		Key: []string{"created"},
+	})
+	if err != nil {
+		return nil, err
+	}
+	err = session.DB(dbName).C(txCollectionName).EnsureIndex(mgo.Index{
+		Key:    []string{"id"},
+		Unique: true,
+	})
+	if err != nil {
+		return nil, err
+	}
+	err = session.DB(dbName).C(certsCollectionName).EnsureIndex(mgo.Index{
+		Key:    []string{"key"},
+		Unique: true,
 	})
 	if err != nil {
 		return nil, err
@@ -172,11 +187,11 @@ func (db *DB) tokens() (*mgo.Session, *mgo.Collection) {
 	}
 	session := db.session.New()
 	session.SetSafe(&mgo.Safe{})
-	collection := session.DB(dbName).C(dbCollectionName)
+	collection := session.DB(dbName).C(tokensCollectionName)
 	return session, collection
 }
 
-// tokens is used to quickly get hold of a session and collection
+// tx is used to quickly get hold of a session and TX collection
 func (db *DB) tx() (*mgo.Session, *mgo.Collection) {
 	if db.session == nil {
 		panic(errors.New("DB is closed already"))
@@ -184,6 +199,17 @@ func (db *DB) tx() (*mgo.Session, *mgo.Collection) {
 	session := db.session.New()
 	session.SetSafe(&mgo.Safe{})
 	collection := session.DB(dbName).C(txCollectionName)
+	return session, collection
+}
+
+// certs is used to quickly get hold of a session and certs collection
+func (db *DB) certs() (*mgo.Session, *mgo.Collection) {
+	if db.session == nil {
+		panic(errors.New("DB is closed already"))
+	}
+	session := db.session.New()
+	session.SetSafe(&mgo.Safe{})
+	collection := session.DB(dbName).C(certsCollectionName)
 	return session, collection
 }
 
