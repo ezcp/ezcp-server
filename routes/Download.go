@@ -48,7 +48,7 @@ func (h *Handler) Download(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	file, err := os.Open(EZCPstorage + token)
+	file, err := os.Open(h.getFilePath(token))
 	if err != nil {
 		h.internalError(res, err)
 		return
@@ -67,7 +67,7 @@ func (h *Handler) Download(res http.ResponseWriter, req *http.Request) {
 		log.Print("Can't remove token", token, err)
 	}
 
-	err = os.Remove(EZCPstorage + token)
+	err = os.Remove(h.getFilePath(token))
 	if err != nil {
 		log.Print("Can't remove file ", token, err)
 	}

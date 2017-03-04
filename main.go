@@ -93,8 +93,6 @@ func main() {
 		}()
 	}
 
-	os.Mkdir(routes.EZCPstorage, 0700) // it doesn't matter if it exists already
-
 	r := mux.NewRouter()
 
 	db, err := db.NewDB(*dbHost, db.BitgoToken(BitgoToken), BitgoWallet)

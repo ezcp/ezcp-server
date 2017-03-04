@@ -35,7 +35,7 @@ func (h *Handler) Upload(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	file, err := os.Create(EZCPstorage + token)
+	file, err := os.Create(h.getFilePath(token))
 	if err != nil {
 		h.internalError(res, err)
 		return
