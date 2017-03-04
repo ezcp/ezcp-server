@@ -19,6 +19,7 @@ func (h *Handler) Root(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	res.Header().Set("Content-type", "text/html")
 	res.WriteHeader(200)
 	hash := h.getToken(req)
 

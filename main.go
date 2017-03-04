@@ -15,7 +15,6 @@ import (
 
 	"ezcp.io/ezcp-server/db"
 	"github.com/gorilla/mux"
-	"github.com/rs/cors"
 )
 
 var (
@@ -113,8 +112,7 @@ func main() {
 	r.HandleFunc("/bitcoin", handler.Bitcoin)
 	r.HandleFunc("/", handler.Root)
 
-	withCors := cors.Default().Handler(r) // TODO LATER finer handling of allowed origins
-	http.Handle("/", withCors)
+	http.Handle("/", Gzip(r))
 
 	if *ssl {
 		certManager := autocert.Manager{
