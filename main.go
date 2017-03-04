@@ -107,11 +107,11 @@ func main() {
 	defer db.Close()
 	handler := routes.NewHandler(db, AllowedOrigin)
 
-	r.HandleFunc("/token", handler.GetToken)
 	r.HandleFunc("/token/{tx}", handler.GetTokenTx)
 	r.HandleFunc("/upload/{token}", handler.Upload)
 	r.HandleFunc("/download/{token}", handler.Download)
 	r.HandleFunc("/bitcoin", handler.Bitcoin)
+	r.HandleFunc("/", handler.Root)
 
 	withCors := cors.Default().Handler(r) // TODO LATER finer handling of allowed origins
 	http.Handle("/", withCors)

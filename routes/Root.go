@@ -4,32 +4,22 @@ import (
 	"crypto/sha1"
 	"errors"
 	"fmt"
+	"log"
 	"math/rand"
 	"net/http"
 	"strconv"
 	"time"
 )
 
-// GetToken creates a new token for the webpage
-// It's using fields in the request to determine a unique SHA1 hash
-// and renders a template
-//
-// It stores the token in a database with a timestamp. Tokens which weren't used
-// are removed after some time.
-func (h *Handler) GetToken(res http.ResponseWriter, req *http.Request) {
+// Root serves the home page
+func (h *Handler) Root(res http.ResponseWriter, req *http.Request) {
 
-	if req.Method != http.MethodPost {
+	if req.Method != http.MethodGet {
 		res.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
 
-	// origin := req.Header.Get("Origin")
-	// if origin != h.origin {
-	// 	log.Print("Wrong origin header")
-	// 	res.WriteHeader(401)
-	// 	return
-	// }
-
+	res.WriteHeader(200)
 	hash := h.getToken(req)
 
 	exists, err := h.db.TokenExists(hash, false)
@@ -44,8 +34,14 @@ func (h *Handler) GetToken(res http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		h.internalError(res, err)
 	}
-	res.WriteHeader(http.StatusCreated)
-	res.Write([]byte(hash))
+	vars := struct {
+		Token string
+	}{hash}
+
+	err = h.homeTemplate.Execute(res, vars)
+	if err != nil {
+		log.Print(err)
+	}
 }
 
 func (h *Handler) getToken(req *http.Request) string {
