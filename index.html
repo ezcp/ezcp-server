@@ -125,13 +125,15 @@
 			</p>
 			<div class="row">
 				<div class="column">
-					<h5>Install from binary</h5>
-					<pre>wget https://ezcp.io/linux/ezcp</pre>
-					<pre>wget https://ezcp.io/osx/ezcp</pre>
+					<h5>Easy install from binary</h5>
+					<pre>wget -o ezcp <a href="https://ezcp.io/linux">https://ezcp.io/linux</a></pre>
+					<pre>wget -o ezcp <a href="https://ezcp.io/osx">https://ezcp.io/osx</a></pre>
+					<pre>wget -o ezcp.exe <a href="https://ezcp.io/windows">https://ezcp.io/windows</a></pre>
+					<p>Or simply click the link in a browser</p>
 				</div>
 				<div class="column">
 					<h5>or with node.js</h5>
-					<pre>npm intall -g ezcp</pre>
+					<pre>npm install -g ezcp</pre>
 				</div>
 			</div>
 		</div>
@@ -158,8 +160,8 @@
 			<h3>Premium Year</h3>
 			<div class="row">
 				<div class="column">
-					<p>Use <code>ezcp --bitcoin</code> to obtain an address, and send <b>0.01&nbsp;BTC</b> or more to it. Note the bitcoin
-						transaction Hash and use it in <code>ezcp --login [hash]</code>.</p>
+					<p>Use <code>ezcp -b</code> to obtain an address, and send <b>0.01&nbsp;BTC</b> or more to it. Note the bitcoin
+						transaction Hash and use it in <code>ezcp -l [hash]</code> to log in.</p>
 					<p>You can now enjoy a full year of ezcp with a permanent token, one that doesn't change and can be reused<br/>
 						plus you can upload large files (150MB vs. 20MB)<br/> plus your files remain in the clipboard up to 24h instead of
 						1h...</p>
