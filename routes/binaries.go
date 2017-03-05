@@ -15,7 +15,7 @@ func (h *Handler) DownloadOS(osname string, binName string) func(http.ResponseWr
 			return
 		}
 
-		file, err := os.Open(path.Join("bin", "ezcp."+osname))
+		file, err := os.Open(path.Join("bin", "ezcp-"+osname))
 		defer file.Close()
 		if err != nil {
 			res.WriteHeader(404)
