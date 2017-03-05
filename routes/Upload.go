@@ -44,6 +44,7 @@ func (h *Handler) Upload(res http.ResponseWriter, req *http.Request) {
 		h.internalError(res, err)
 		return
 	}
+	defer file.Close()
 
 	var size int64
 	size, err = io.Copy(file, req.Body)

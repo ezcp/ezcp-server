@@ -122,10 +122,16 @@ func main() {
 	}
 
 	r := mux.NewRouter()
-	r.HandleFunc("/token/{tx}", handler.GetTokenTx)
 	r.HandleFunc("/upload/{token}", handler.Upload)
 	r.HandleFunc("/download/{token}", handler.Download)
+
 	r.HandleFunc("/bitcoin", handler.Bitcoin)
+	r.HandleFunc("/token/{tx}", handler.GetTokenTx)
+
+	r.HandleFunc("/linux", handler.DownloadOS("linux", "ezcp"))
+	r.HandleFunc("/osx", handler.DownloadOS("darwin", "ezcp"))
+	r.HandleFunc("/windows", handler.DownloadOS("windows", "ezcp.exe"))
+
 	r.HandleFunc("/", handler.Root)
 
 	http.Handle("/", Gzip(r))

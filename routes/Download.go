@@ -55,6 +55,7 @@ func (h *Handler) Download(res http.ResponseWriter, req *http.Request) {
 		h.internalError(res, err)
 		return
 	}
+	defer file.Close()
 
 	res.Header().Set("Content-Type", "application/octet-stream")
 	res.WriteHeader(200)
