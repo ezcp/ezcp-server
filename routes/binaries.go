@@ -8,7 +8,7 @@ import (
 )
 
 // DownloadOS allows easy downloading of binaries
-func (h *Handler) DownloadOS(osname string, binName string) {
+func (h *Handler) DownloadOS(osname string, binName string) func(http.ResponseWriter, *http.Request) {
 	return func(res http.ResponseWriter, req *http.Request) {
 		if req.Method != http.MethodGet {
 			res.WriteHeader(http.StatusMethodNotAllowed)
