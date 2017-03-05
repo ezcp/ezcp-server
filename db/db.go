@@ -19,6 +19,11 @@ const (
 
 	// EZCPstorage is the storage location path for EZCP
 	EZCPstorage = "ezcp-storage/"
+
+	// MiB is 1Mo
+	MiB            = 1048576
+	permanentLimit = 150
+	transientLimit = 25
 )
 
 // Token is a stored Token
@@ -32,6 +37,12 @@ type Token struct {
 	// only for permanent tokens
 	Permanent bool   `bson:"permanent"`
 	Creator   string `bson:"creator,omitempty"`
+}
+
+// IsValidSize returns true if the token allows this file size, false otherwise
+func (t *Token) IsValidSize(size int64) bool {
+	return (t.Permanent && size < permanentLimit*MiB) ||
+		size < transientLimit*MiB
 }
 
 // DB models our db

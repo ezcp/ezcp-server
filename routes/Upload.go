@@ -8,6 +8,8 @@ import (
 
 	"ezcp.io/ezcp-server/db"
 
+	"errors"
+
 	"github.com/gorilla/mux"
 )
 
@@ -47,6 +49,12 @@ func (h *Handler) Upload(res http.ResponseWriter, req *http.Request) {
 	size, err = io.Copy(file, req.Body)
 	if err != nil {
 		h.internalError(res, err)
+		return
+	}
+
+	if !tok.IsValidSize(size) {
+		os.Remove(db.GetFilePath(token))
+		h.internalError(res, errors.New("File too large"))
 		return
 	}
 
