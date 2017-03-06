@@ -15,6 +15,8 @@ ezcp-server-deploy:
     - cd $GOSOURCES
     - curl https://glide.sh/get | sh
     - glide install
+    - go get github.com/prometheus/client_golang/prometheus
+    - go get github.com/prometheus/client_golang/prometheus/promhttp
     - go build -ldflags "-X main.Build=$CI_PIPELINE_ID -X main.Tag=$CI_BUILD_TAG -X main.BitgoWallet=$BITGO_WALLET -X main.BitgoToken=$BITGO_TOKEN"
     - mkdir -p ~/.ssh
     - ssh-keygen -f "/root/.ssh/known_hosts" -R srv1.ezcp.io || true

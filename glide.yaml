@@ -8,3 +8,8 @@ import:
   subpackages:
   - acme/autocert
 - package: gopkg.in/mgo.v2
+- package: github.com/prometheus/client_golang
+  version: ^0.8.0
+  subpackages:
+  - prometheus
+  - prometheus/promhttp

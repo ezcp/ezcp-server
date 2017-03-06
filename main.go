@@ -14,6 +14,7 @@ import (
 	"ezcp.io/ezcp-server/db"
 	"ezcp.io/ezcp-server/routes"
 	"github.com/gorilla/mux"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"golang.org/x/crypto/acme/autocert"
 )
 
@@ -121,18 +122,24 @@ func main() {
 		return
 	}
 
+	hostname, err := os.Hostname()
+	registerPrometheus()
+
 	r := mux.NewRouter()
-	r.HandleFunc("/upload/{token}", handler.Upload)
-	r.HandleFunc("/download/{token}", handler.Download)
+	r.HandleFunc("/upload/{token}", hitCounter(hostname, "upload", handler.Upload))
+	r.HandleFunc("/download/{token}", hitCounter(hostname, "download", handler.Download))
 
-	r.HandleFunc("/bitcoin", handler.Bitcoin)
-	r.HandleFunc("/token/{tx}", handler.GetTokenTx)
+	r.HandleFunc("/bitcoin", hitCounter(hostname, "bitcoin", handler.Bitcoin))
+	r.HandleFunc("/token/{tx}", hitCounter(hostname, "login", handler.GetTokenTx))
 
-	r.HandleFunc("/linux", handler.DownloadOS("linux", "ezcp"))
-	r.HandleFunc("/osx", handler.DownloadOS("darwin", "ezcp"))
-	r.HandleFunc("/windows", handler.DownloadOS("windows", "ezcp.exe"))
+	r.HandleFunc("/linux", hitCounter(hostname, "linux", handler.DownloadOS("linux", "ezcp")))
+	r.HandleFunc("/osx", hitCounter(hostname, "osx", handler.DownloadOS("darwin", "ezcp")))
+	r.HandleFunc("/windows", hitCounter(hostname, "windows", handler.DownloadOS("windows", "ezcp.exe")))
 
-	r.HandleFunc("/", handler.Root)
+	r.HandleFunc("/", hitCounter(hostname, "home", handler.Root))
+
+	// TODO check "Authorization: Bearer b27e224ea91e550af70e393f9d92699076551774"
+	http.Handle("/metrics", promhttp.Handler())
 
 	http.Handle("/", Gzip(r))
 
