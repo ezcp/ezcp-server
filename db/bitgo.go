@@ -45,7 +45,7 @@ func (t *Transaction) Check() error {
 	validationRequired := txdate.AddDate(0, 0, 1) // one day to validate transaction
 	expires := txdate.AddDate(1, 0, 0)
 	now := time.Now()
-	if t.Pending && validationRequired.After(now) {
+	if t.Pending && validationRequired.Before(now) {
 		return errors.New("Transaction has been pending validation for more than 24h") // no validation in one day
 	}
 	// could add tests about validation count too...
