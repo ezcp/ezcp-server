@@ -42,13 +42,8 @@ func (t *Transaction) Check() error {
 		return errors.New("EZCP wasn't the recepient of the transaction")
 	}
 	txdate := t.GetDate()
-	validationRequired := txdate.AddDate(0, 0, 1) // one day to validate transaction
 	expires := txdate.AddDate(1, 0, 0)
 	now := time.Now()
-	if t.Pending && validationRequired.Before(now) {
-		return errors.New("Transaction has been pending validation for more than 24h") // no validation in one day
-	}
-	// could add tests about validation count too...
 	if expires.Before(now) {
 		return errors.New("Subscription has expired")
 	}
