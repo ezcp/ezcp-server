@@ -1,0 +1,13 @@
+// Place your settings in this file to overwrite default and user settings.
+{
+	// Place your settings in this file to overwrite the default settings
+	"files.exclude": {
+		"**/.git": true,
+		"**/.svn": true,
+		"**/.hg": true,
+		"**/.DS_Store": true,
+		"ezcp-go": true,
+		"glide.lock": true,
+		"vendor": true
+	}
+}
