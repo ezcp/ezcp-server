@@ -62,9 +62,7 @@ func (t *Transaction) GetDate() time.Time {
 
 // GetOurAccountEntry returns the account entry that belongs to us, or nil if not found
 func (t *Transaction) GetOurAccountEntry() *Account {
-	log.Print(t)
 	for _, a := range t.Outputs {
-		log.Print(a)
 		if a.IsMine {
 			return &a
 		}
@@ -84,7 +82,6 @@ func (db *DB) BitgoTransaction(tx string) (*Transaction, error) {
 	if err != nil {
 		return nil, err
 	}
-	log.Print(resp.StatusCode)
 
 	transaction := &Transaction{}
 	if err := json.NewDecoder(resp.Body).Decode(transaction); err != nil {

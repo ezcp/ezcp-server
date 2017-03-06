@@ -14,7 +14,7 @@ import (
 // Root serves the home page
 func (h *Handler) Root(res http.ResponseWriter, req *http.Request) {
 
-	if req.Method != http.MethodGet {
+	if req.Method != http.MethodGet && req.Method != http.MethodHead {
 		res.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
