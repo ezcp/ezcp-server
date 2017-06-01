@@ -27,10 +27,10 @@ ezcp-server-deploy:
     - ssh-add <(echo "$EZCP_IO_SSHKEY")
     - ssh root@srv1.ezcp.io 'killall ezcp-server || true && rm -f ~/ezcp-server'
     - scp ezcp-server index.html root@srv1.ezcp.io:~/
-    - ssh root@srv1.ezcp.io 'nohup ~/ezcp-server -db db1.ezcp.io:27017,db2.ezcp.io:27017,db3.ezcp.io:27017 --ssl > ~/ezcp.log 2>&1 &'
+    - ssh root@srv1.ezcp.io 'nohup ~/ezcp-server -db www.sslping.com:27017 --ssl > ~/ezcp.log 2>&1 &'
     - ssh root@srv2.ezcp.io 'killall ezcp-server || true && rm -f ~/ezcp-server'
     - scp ezcp-server index.html root@srv2.ezcp.io:~/
-    - ssh root@srv2.ezcp.io 'nohup ~/ezcp-server -db db1.ezcp.io:27017,db2.ezcp.io:27017,db3.ezcp.io:27017 --ssl > ~/ezcp.log 2>&1 &'
+    - ssh root@srv2.ezcp.io 'nohup ~/ezcp-server -db www.sslping.com:27017 --ssl > ~/ezcp.log 2>&1 &'
 
   environment:
     name: ezcp.io
